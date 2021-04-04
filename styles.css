@@ -239,7 +239,8 @@ img
   #progress {
     width: 0%;
     height: 10px;
-    background-color: #af4c4c;
+    background-color: rgb(250, 0, 0);
+    /* background-color: #af4c4c; */
     border-radius: 4px;
   }
   
