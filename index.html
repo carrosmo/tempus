@@ -15,11 +15,13 @@
         <h1 style="user-select: none;">Tempus - Watch <img src="youtube.png" id="youtube-icon-larger"> Together</h1>
     </div>
     <div class="route-container">
-        <button class="route" onclick="showInputfield()">Enter a room</button>
+        <h1>Enter room by</h1>
+        <button class="route" onclick="showInputfield('Name of room')">Name</button>
+        <button class="route" onclick="showInputfield('URL of Youtube-video')">Youtube-URL</button>
         <br>
         <div id="input-div" style="visibility: hidden;">
             <form onsubmit="attemptTojoinSession(event);" autocomplete="off">
-                <input id="session-input" placeholder="Name of the room / ID" style="width: 100%;">
+                <input id="session-input" placeholder="" style="width: 100%;">
             </form>
         </div>
     </div>

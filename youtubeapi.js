@@ -211,9 +211,10 @@ function displayWatchers(amount) {
     }
 }
 
-function showInputfield() { // true = join a room with id, false = create a room with id
+function showInputfield(newPlaceholder) {
     document.getElementById("input-div").style.visibility = "visible";
-    document.getElementById('type-title').textContent = "Join a room"
+    document.getElementById("session-input").placeholder = newPlaceholder;
+    document.getElementById("session-input").focus();
 }
 
 function attemptTojoinSession(event) {
@@ -233,4 +234,12 @@ function deleteVideo(id) {
 function playVideo(id) {
     const index = connection.sessionState.queue.indexOf(connection.sessionState.queue.find(vid => vid.id === id));
     connection.send({ type: "play-video-from-queue", data: { queueIndex: index } });
+}
+
+function createSessionWithLink(link) {
+    connection.send({
+        type: "create-session-with-link",
+        link: link,
+        date: Date.now()
+    });
 }
