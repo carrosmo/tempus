@@ -1,4 +1,4 @@
-var forceProd = true;
+var forceProd = false;
 var serverUrl = forceProd ? "ws://ludvig.cloudno.de/tempus" : (window.location.port ? "ws://localhost:8080/tempus" : "wss://ludvig.cloudno.de/tempus");
 
 var connection = new Connection(serverUrl);
@@ -44,7 +44,7 @@ function onYouTubeIframeAPIReady() {
         playerVars: {
             'start': 0,
             'autoplay': 0,
-            'origin': "https://tempus-luddet.vercel.app",
+            'origin': "https://www.tempus.gq",
             "rel": 0,
             "modestbranding": 1,
             'sandbox': "allow-forms allow-scripts allow-pointer-lock allow-same-origin allow-top-navigation"
@@ -69,7 +69,7 @@ function onPlayerReady() {
     // Set video state
     //if (video.timestamp != 0)
     //player.seekTo(video.timestamp, true);
-    
+
     // Playback speed
     player.setPlaybackRate(video.playbackSpeed);
 
@@ -105,14 +105,15 @@ function onPlayerStateChange(event) {
         if (!youtubeVideoHasLoaded && !connection.joinedMidSession) {
             console.log("VIDEO LOADED");
 
-            setTimeout(() => connection.send({ type: "video-loaded" }), 1000);
+            setTimeout(() => connection.send({ type: "video-loaded", date: now() }), 1000);
 
             youtubeVideoHasLoaded = true;
             youtubeVideoFirstLoad = true;
         }
         if (connection.joinedMidSession) {
+            console.log("Playing video (joined mid session)")
             youtubeVideoFirstLoad = true;
-            player.playVideo();
+            setTimeout(() => player.playVideo(), 1000);
         }
     }
 
@@ -319,6 +320,6 @@ function createSessionWithLink(link) {
     connection.send({
         type: "create-session-with-link",
         link: link,
-        date: Date.now()
+        date: now()
     });
 }
