@@ -1,3 +1,21 @@
+Date.prototype.stdTimezoneOffset = function () {
+    var jan = new Date(this.getFullYear(), 0, 1);
+    var jul = new Date(this.getFullYear(), 6, 1);
+    return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+}
+
+Date.prototype.isDstObserved = function () {
+    return this.getTimezoneOffset() < this.stdTimezoneOffset();
+}
+
+const now = () => {
+    var today = new Date();
+    var offset = today.getTimezoneOffset() - today.stdTimezoneOffset()
+    var d = new Date(); 
+    d.setMinutes(d.getMinutes() + offset);
+    return d.getTime();
+}
+
 const addVideoToQueueHtml = (video) => {
     var durationStr = video.duration < 1 ? (Math.round(video.duration * 60) + "s") : (Math.round(video.duration) + " min");
     var thumbnail = video.thumbnail.url;
@@ -60,4 +78,8 @@ function removeTrackProgress() {
     if(document.contains(document.getElementById('progress-bar'))) {
         document.getElementById('progress-bar').remove();
     }
+}
+
+function a() {
+    queueVideo({ preventDefault: () => {} }, "https://www.youtube.com/watch?v=LXb3EKWsInQ")
 }

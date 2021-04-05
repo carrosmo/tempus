@@ -17,6 +17,7 @@ class Connection {
         this.sessionId = null;
         this.clientId = null;
         this.watchers = 0;
+        this.joinedMidSession = false;
 
         this.url = url;
         this.conn = new WebSocket(url);
@@ -35,6 +36,10 @@ class Connection {
         if (data.type != "pong")
             console.log("Sending message", data);
 
+        // const s = JSON.stringify(data);
+        // setTimeout(() => this.conn.send(s), 1000);
+        //  if (data.type != "pong") console.trace();
+
         this.conn.send(JSON.stringify(data));
     }
 
@@ -50,7 +55,7 @@ class Connection {
     handleMessage(msg) {
         var message = JSON.parse(msg.data);
 
-        if (message.type != "ping") console.log("Recieved message", message);
+        if (message.type != "ping") console.log("Recieved message sent by %s", message.originalMessage.sentBy, message);
 
         switch (message.type) {
             case "join-session": {
@@ -63,12 +68,26 @@ class Connection {
 
                 // Load the youtube player
                 this.sessionState = message.data.state;
-                if (this.sessionState.queue.length > 0) createYoutubeIframe();
+                if (this.sessionState.queue.length > 0) {
+                    this.joinedMidSession = true;
+                    createYoutubeIframe();
+                }
 
                 // Set the queue
                 this.sessionState.queue.forEach(video => addVideoToQueueHtml(video));
 
                 console.log("Joined session:", this.sessionId);
+
+                // Start a periodic timestamp update
+                if (this.isAdmin) {
+                    console.log("Started timestamp update interval");
+                    setInterval(() => {
+                        // Don't update timestamp if video is paused
+                        if (this.getVideoToPlay() && !this.getVideoToPlay().isPaused && youtubeIframeReady) {
+                            this.send({ type: "timestamp-update", data: { timestamp: player.getCurrentTime() }, date: now() });
+                        }
+                    }, 3000);
+                }
 
                 break;
             }
@@ -81,25 +100,30 @@ class Connection {
                 if (!message.success) return console.log(message.error);
 
                 youtubeIgnoreEventChange = true;
-                setTimeout(() => youtubeIgnoreEventChange = false, 100);
+                setTimeout(() => youtubeIgnoreEventChange = false, 500);
 
                 this.sessionState = message.data.state;
 
-                if (!youtubeIframeReady)
-                    return createYoutubeIframe();
-
                 // Check if the message was sent by me
                 if (this.sentByMe(message))
-                    return;
+                   return;
+
+                if (!youtubeIframeReady)
+                   return createYoutubeIframe();
 
                 const video = this.getVideoToPlay();
+
+                console.log("Video is at %s, but should be at %s according to the server", player.getCurrentTime(), video.timestamp);
+                console.log("Message took in total %s seconds", (now() - message.originalMessage.date) / 1000)
 
                 // Set timestamp
                 const timeDiff = Math.abs(player.getCurrentTime() - video.timestamp);
                 const maxTimeDesync = 1; // in seconds
 
+                console.log("Time desync:", timeDiff);
+
                 if (timeDiff > maxTimeDesync)
-                    player.seekTo(video.timestamp + 0.5, true);
+                    player.seekTo(video.timestamp, true);
 
                 // Playback speed
                 player.setPlaybackRate(video.playbackSpeed);
@@ -116,23 +140,29 @@ class Connection {
                 this.sessionState = message.data.state;
                 const videoToPlay = this.sessionState.queue[this.sessionState.currentQueueIndex];
 
+                youtubeVideoHasLoaded = false;
+
                 removeTrackProgress();
                 addProgressBar(videoToPlay.id);
 
                 if (!youtubeIframeReady) {
                     createYoutubeIframe();
                 } else {
-                    player.loadVideoById(videoToPlay.id, videoToPlay.timestamp);
-                    youtubeShouldSeekToStart = true;
+                    player.cueVideoById(videoToPlay.id, videoToPlay.timestamp);
+                    //youtubeShouldSeekToStart = true;
 
                     // Playback speed
                     player.setPlaybackRate(videoToPlay.playbackSpeed);
+                    player.playVideo();
+                    player.pauseVideo();
                 }
 
                 break;
             }
             case "play-next-video": {
                 if (!message.success) return console.log(message.error);
+
+                youtubeVideoHasLoaded = false;
 
                 this.sessionState = message.data.state;
 
@@ -183,7 +213,7 @@ class Connection {
                         this.send({
                             type: "play-video-from-queue",
                             data: { queueIndex: previousVideo },
-                            date: Date.now()
+                            date: now()
                         });
                     }
                 }
@@ -201,10 +231,10 @@ class Connection {
             case "broadcast-clients": {
                 if (!message.success) return console.log(message.error);
 
-                if (this.getVideoToPlay()) {
-                    console.log(this.getVideoToPlay().timestamp)
-                    console.log(getVideoData().timestamp);
-                }
+                // if (this.getVideoToPlay()) {
+                //     console.log(this.getVideoToPlay().timestamp)
+                //     console.log(getVideoData().timestamp);
+                // }
 
                 this.watchers = message.data.watchers;
 
@@ -212,6 +242,32 @@ class Connection {
 
                 break;
             }
+
+            case "play-video": {
+                if (!message.success) return console.log(message.error);
+
+                if (youtubeIframeReady)
+                    player.playVideo();
+
+                break;
+            }
+
+            case "give-me-timestamp": {
+                if (!message.success) return console.log(message.error);
+
+                youtubeIgnoreEventChange = true;
+                setTimeout(() => youtubeIgnoreEventChange = false, 2000);
+
+                const margin = 1;
+                this.getVideoToPlay().timestamp = message.data.timestamp + margin;
+
+                youtubeVideoFirstLoad = false;
+
+                player.seekTo(this.getVideoToPlay().timestamp);
+
+                break;
+            }
+
             default: {
                 console.log("Other message:", message.type);
                 break;
