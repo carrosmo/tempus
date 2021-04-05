@@ -323,3 +323,7 @@ function createSessionWithLink(link) {
         date: now()
     });
 }
+
+window.onhashchange = function() {
+    window.location.reload();
+}
