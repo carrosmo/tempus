@@ -247,7 +247,7 @@ class Connection {
                 if (!message.success) return console.log(message.error);
 
                 if (youtubeIframeReady)
-                    player.playVideo();
+                player.playVideo()//setTimeout(() => player.playVideo(), 1000);
 
                 break;
             }
