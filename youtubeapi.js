@@ -12,9 +12,10 @@ var youtubeTimeToLoad = null;
 var youtubeStartedLoadingAt = null;
 var youtubeShouldSeekToStart = false;
 var youtubeVideoHasLoaded = false;
+var youtubeIframeHasVideo = false;
 
 function createYoutubeIframe() {
-    if (connection.sessionState.queue.length == 0) return; // If no videos exists
+    //if (connection.sessionState.queue.length == 0) return; // If no videos exists
     if (youtubeIframeReady) return;
 
     // If the script already is loaded
@@ -33,14 +34,23 @@ function createYoutubeIframe() {
 }
 
 function onYouTubeIframeAPIReady() {
-    if (connection.sessionState.queue.length == 0) return; // If no videos exists
-
     if (!youtubeStartedLoadingAt) youtubeStartedLoadingAt = now();
 
+    var videoId;
+
+    // Create an empty iframe
+    if (!connection || !connection.sessionState || JSON.stringify(connection.sessionState) == "{}" || connection.sessionState.queue.length == 0) {
+        videoId = "oxqdrquXuec";
+        youtubeIframeHasVideo = false;
+    } else {
+        videoId = connection.getVideoToPlay().id;
+        youtubeIframeHasVideo = true;
+    }
+
     player = new YT.Player('player', {
-        height: '390',
-        width: '640',
-        videoId: connection.getVideoToPlay().id,
+        height: '720',
+        width: '1280',
+        videoId: videoId,
         playerVars: {
             'start': 0,
             'autoplay': 0,
@@ -61,14 +71,25 @@ function onYouTubeIframeAPIReady() {
 function onPlayerReady() {
     youtubeIframeReady = true;
 
+    if (!youtubeIframeHasVideo) {
+        youtubeIgnoreEventChange = false;
+
+        const frame = document.querySelector("iframe");
+        const noVid = document.createElement("h1");
+        noVid.id = "no-video";
+        noVid.innerText = "Empty queue";
+
+        frame.parentElement.appendChild(noVid);
+
+        frame.style.visibility = "hidden";
+
+        return;
+    }
+
     youtubeIgnoreEventChange = true;
     setTimeout(() => youtubeIgnoreEventChange = false, 100);
 
     const video = connection.getVideoToPlay();
-
-    // Set video state
-    //if (video.timestamp != 0)
-    //player.seekTo(video.timestamp, true);
 
     // Playback speed
     player.setPlaybackRate(video.playbackSpeed);

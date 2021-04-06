@@ -57,7 +57,9 @@ function showSnack(message, ms) {
 }
 
 function addProgressBar(id) {
-    document.querySelector(`[data-id='${id}']`).innerHTML += `<div id="progress-bar"><div id="progress"></div></div>`;
+    if (document.querySelector(`[data-id='${id}']`))
+        document.querySelector(`[data-id='${id}']`).innerHTML += `<div id="progress-bar"><div id="progress"></div></div>`;
+    
     if(trackingProgress == false) {
         trackProgress(id);
     }
