@@ -142,6 +142,7 @@ input:focus
   margin-bottom: 16px;
   width: 100%;
   display: flex;
+  overflow: hidden;
   /* -webkit-box-shadow: 4px 4px 14px 0px rgb(64 24 24 / 72%);
     -moz-box-shadow: 4px 4px 14px 0px rgb(64 24 24 / 72%);
     box-shadow: 4px 4px 14px 0px rgb(64 24 24 / 72%); */
@@ -398,6 +399,44 @@ form {
     visibility: visible;
     -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
     animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+.result-container
+{
+  width: calc(100%);
+  visibility: hidden;
+  overflow: none;
+  clear: both;
+  position: absolute;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.85);
+  height: 100%;
+  width: 100%;
+  top: 0;
+}
+.mini
+{
+  margin-top: 1rem;
+  width: 50%;
+}
+.exit
+{
+  position: absolute;
+  left: calc(100vw - 25%);
+  top: 1rem;
+  z-index: 1;
+  height: 60px;
+  width: 60px;
+  text-align: center;
+  margin: 0 auto;
+}
+.exit:hover
+{
+  background-color: rgb(134, 0, 0);
 }
 
 @-webkit-keyframes fadein {

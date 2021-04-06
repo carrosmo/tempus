@@ -228,6 +228,10 @@ class Connection {
 
                 break;
             }
+            case "get-search-results": {
+                drawSearchResults(parseSearchResult(message.data));
+                break;
+            }
             case "broadcast-clients": {
                 if (!message.success) return console.log(message.error);
 

@@ -121,7 +121,7 @@ function onPlayerStateChange(event) {
         console.log("PLAYING", youtubeVideoFirstLoad, connection.joinedMidSession)
         updateTitle(`Playing: ${player.getVideoData().title}`)
 
-        if(!document.body.contains(document.getElementById('progress-bar'))) {
+        if (!document.body.contains(document.getElementById('progress-bar'))) {
             addProgressBar(player.getVideoData()['video_id']);
         }
 
@@ -130,13 +130,13 @@ function onPlayerStateChange(event) {
                 type: "state-update",
                 data: { ...getVideoData(), firstLoad: youtubeVideoFirstLoad },
                 date: now()
-            });    
+            });
         } else if (!youtubeVideoFirstLoad) {
             connection.send({
                 type: "state-update",
                 data: { ...getVideoData(), firstLoad: youtubeVideoFirstLoad },
                 date: now()
-            });    
+            });
         }
 
         if (connection.joinedMidSession) {
@@ -145,7 +145,7 @@ function onPlayerStateChange(event) {
                     type: "state-update",
                     data: { ...getVideoData(), firstLoad: youtubeVideoFirstLoad },
                     date: now()
-                });    
+                });
             }
         }
 
@@ -268,8 +268,10 @@ const invite = str => {
     showSnack("Copied", 1000)
 };
 
-function queueVideo(event, url) {
-    event.preventDefault();
+function queueVideo(event = null, url) {
+    if (event != null) {
+        event.preventDefault();
+    }
     connection.send({ type: "add-video-to-queue", data: { url } });
     document.getElementById('room').value = "";
 }
@@ -324,6 +326,14 @@ function createSessionWithLink(link) {
     });
 }
 
-window.onhashchange = function() {
+function getSearchResults(search) {
+    connection.send({
+        type: "get-search-results",
+        data: { query: search },
+        date: now()
+    });
+}
+
+window.onhashchange = function () {
     window.location.reload();
 }
