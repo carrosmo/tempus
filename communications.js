@@ -102,6 +102,10 @@ class Connection {
                 youtubeIgnoreEventChange = true;
                 setTimeout(() => youtubeIgnoreEventChange = false, 500);
 
+                if (this.sessionState.currentQueueIndex !== message.data.currentQueueIndex) {
+                    console.log("Another video should be played than the current one (THIS SHOULD NOT HAPPEN)");
+                }
+
                 this.sessionState = message.data.state;
 
                 // Check if the message was sent by me
@@ -145,6 +149,9 @@ class Connection {
                 removeTrackProgress();
                 addProgressBar(videoToPlay.id);
 
+                // Reset the joined mid session flag as the client should be considered "joined from the start of the video"
+                this.joinedMidSession = false; 
+
                 if (!youtubeIframeReady) {
                     createYoutubeIframe();
                 } else {
@@ -171,7 +178,7 @@ class Connection {
 
                 if (!youtubeIframeReady)
                     createYoutubeIframe();
-                else
+                else // TODO Fix
                     player.loadVideoById(this.getVideoToPlay().id);
 
                 break;
@@ -231,11 +238,6 @@ class Connection {
             case "broadcast-clients": {
                 if (!message.success) return console.log(message.error);
 
-                // if (this.getVideoToPlay()) {
-                //     console.log(this.getVideoToPlay().timestamp)
-                //     console.log(getVideoData().timestamp);
-                // }
-
                 this.watchers = message.data.watchers;
 
                 displayWatchers(message.data.watchers);
@@ -256,9 +258,9 @@ class Connection {
                 if (!message.success) return console.log(message.error);
 
                 youtubeIgnoreEventChange = true;
-                setTimeout(() => youtubeIgnoreEventChange = false, 2000);
+                setTimeout(() => youtubeIgnoreEventChange = false, 1000);
 
-                const margin = 1;
+                const margin = 1.5;
                 this.getVideoToPlay().timestamp = message.data.timestamp + margin;
 
                 youtubeVideoFirstLoad = false;

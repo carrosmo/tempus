@@ -44,7 +44,7 @@ function onYouTubeIframeAPIReady() {
         playerVars: {
             'start': 0,
             'autoplay': 0,
-            'origin': "https://www.tempus.gq",
+            'origin': "https://tempus.gq",
             "rel": 0,
             "modestbranding": 1,
             'sandbox': "allow-forms allow-scripts allow-pointer-lock allow-same-origin allow-top-navigation"
@@ -105,7 +105,7 @@ function onPlayerStateChange(event) {
         if (!youtubeVideoHasLoaded && !connection.joinedMidSession) {
             console.log("VIDEO LOADED");
 
-            setTimeout(() => connection.send({ type: "video-loaded", date: now() }), 1000);
+            connection.send({ type: "video-loaded", date: now() });
 
             youtubeVideoHasLoaded = true;
             youtubeVideoFirstLoad = true;
@@ -113,7 +113,7 @@ function onPlayerStateChange(event) {
         if (connection.joinedMidSession) {
             console.log("Playing video (joined mid session)")
             youtubeVideoFirstLoad = true;
-            setTimeout(() => player.playVideo(), 1000);
+            player.playVideo();
         }
     }
 
@@ -224,6 +224,8 @@ function onPlayerStateChange(event) {
     }
     if (event.data === YT.PlayerState.ENDED) {
         console.log("Video ended");
+
+        youtubeVideoFirstLoad = false;
 
         if (!connection.isAdmin) return;
 
