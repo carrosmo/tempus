@@ -9,9 +9,10 @@ Date.prototype.isDstObserved = function () {
 }
 
 const now = () => {
+    return new Date().getTime();
     var today = new Date();
-    var offset = today.getTimezoneOffset() - today.stdTimezoneOffset()
-    var d = new Date();
+    var offset = today.getTimezoneOffset();
+    var d = new Date(); 
     d.setMinutes(d.getMinutes() + offset);
     return d.getTime();
 }
@@ -90,8 +91,10 @@ function showSnack(message, ms) {
 }
 
 function addProgressBar(id) {
-    document.querySelector(`[data-id='${id}']`).innerHTML += `<div id="progress-bar"><div id="progress"></div></div>`;
-    if (trackingProgress == false) {
+    if (document.querySelector(`[data-id='${id}']`))
+        document.querySelector(`[data-id='${id}']`).innerHTML += `<div id="progress-bar"><div id="progress"></div></div>`;
+    
+    if(trackingProgress == false) {
         trackProgress(id);
     }
 }
@@ -104,7 +107,8 @@ function trackProgress(id) {
         if (!player || !youtubeIframeReady) return;
 
         // The last div (progressbar-bar) and the last (and only) element of it (progress)
-        document.getElementById('progress').style.width = `${(player.getCurrentTime()) / (player.getDuration()) * 100}%`
+        if (document.getElementById('progress'))
+            document.getElementById('progress').style.width = `${(player.getCurrentTime())/(player.getDuration())*100}%`
     }, 66 /* 15 fps */)
 }
 
@@ -115,5 +119,13 @@ function removeTrackProgress() {
 }
 
 function a() {
-    queueVideo({ preventDefault: () => { } }, "https://www.youtube.com/watch?v=LXb3EKWsInQ")
+    queueVideo({ preventDefault: () => {} }, "https://www.youtube.com/watch?v=LXb3EKWsInQ")
+}
+
+function b() {
+    queueVideo({ preventDefault: () => {} }, "https://www.youtube.com/watch?v=2ZIpFytCSVc")
+}
+
+function c() {
+    queueVideo({ preventDefault: () => {} }, "https://www.youtube.com/watch?v=fwKhMzdpu9Y")
 }

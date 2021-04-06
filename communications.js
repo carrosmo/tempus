@@ -26,7 +26,6 @@ class Connection {
         // Receiving message
         this.conn.onmessage = this.handleMessage.bind(this);
 
-
         this.conn.onerror = function (event) {
             showSnack("Error: Could not connect to the server", 1000)
         };
@@ -68,9 +67,26 @@ class Connection {
 
                 // Load the youtube player
                 this.sessionState = message.data.state;
+
+                if (!youtubeIframeReady) createYoutubeIframe();
+
                 if (this.sessionState.queue.length > 0) {
                     this.joinedMidSession = true;
-                    createYoutubeIframe();
+
+                    if (youtubeIframeReady) {
+                        // Make sure the iframe is visible
+                        document.querySelector("iframe").style.visibility = "";
+                        if (document.querySelector("#no-video")) document.querySelector("#no-video").remove();
+
+                        const videoToPlay = this.getVideoToPlay();
+
+                        player.cueVideoById(videoToPlay.id, videoToPlay.timestamp);
+
+                        // Playback speed
+                        player.setPlaybackRate(videoToPlay.playbackSpeed);
+
+                        player.playVideo();
+                    }
                 }
 
                 // Set the queue
@@ -86,7 +102,7 @@ class Connection {
                         if (this.getVideoToPlay() && !this.getVideoToPlay().isPaused && youtubeIframeReady) {
                             this.send({ type: "timestamp-update", data: { timestamp: player.getCurrentTime() }, date: now() });
                         }
-                    }, 3000);
+                    }, 10000);
                 }
 
                 break;
@@ -102,11 +118,13 @@ class Connection {
                 youtubeIgnoreEventChange = true;
                 setTimeout(() => youtubeIgnoreEventChange = false, 500);
 
+                // TODO check if the video is different from the one playing
+
                 this.sessionState = message.data.state;
 
                 // Check if the message was sent by me
                 if (this.sentByMe(message))
-                   return;
+                    return;
 
                 if (!youtubeIframeReady)
                    return createYoutubeIframe();
@@ -145,14 +163,23 @@ class Connection {
                 removeTrackProgress();
                 addProgressBar(videoToPlay.id);
 
+                // Reset the joined mid session flag as the client should be considered "joined from the start of the video"
+                this.joinedMidSession = false; 
+
                 if (!youtubeIframeReady) {
                     createYoutubeIframe();
                 } else {
+                    // Make sure the iframe is visible
+                    document.querySelector("iframe").style.visibility = "";
+                    if (document.querySelector("#no-video")) document.querySelector("#no-video").remove();
+
+                    youtubeIframeHasVideo = true;
                     player.cueVideoById(videoToPlay.id, videoToPlay.timestamp);
-                    //youtubeShouldSeekToStart = true;
 
                     // Playback speed
                     player.setPlaybackRate(videoToPlay.playbackSpeed);
+
+                    // Check if the user has the window in focus and can therefor auto play the video
                     player.playVideo();
                     player.pauseVideo();
                 }
@@ -171,7 +198,7 @@ class Connection {
 
                 if (!youtubeIframeReady)
                     createYoutubeIframe();
-                else
+                else // TODO Fix
                     player.loadVideoById(this.getVideoToPlay().id);
 
                 break;
@@ -235,11 +262,6 @@ class Connection {
             case "broadcast-clients": {
                 if (!message.success) return console.log(message.error);
 
-                // if (this.getVideoToPlay()) {
-                //     console.log(this.getVideoToPlay().timestamp)
-                //     console.log(getVideoData().timestamp);
-                // }
-
                 this.watchers = message.data.watchers;
 
                 displayWatchers(message.data.watchers);
@@ -251,7 +273,7 @@ class Connection {
                 if (!message.success) return console.log(message.error);
 
                 if (youtubeIframeReady)
-                player.playVideo()//setTimeout(() => player.playVideo(), 1000);
+                    player.playVideo();
 
                 break;
             }
@@ -260,7 +282,7 @@ class Connection {
                 if (!message.success) return console.log(message.error);
 
                 youtubeIgnoreEventChange = true;
-                setTimeout(() => youtubeIgnoreEventChange = false, 2000);
+                setTimeout(() => youtubeIgnoreEventChange = false, 1000);
 
                 const margin = 1;
                 this.getVideoToPlay().timestamp = message.data.timestamp + margin;
@@ -280,6 +302,9 @@ class Connection {
     }
 
     getVideoToPlay() {
+        if (!this.sessionState) return;
+        if (JSON.stringify(this.sessionState) == "{}") return; // Is an empty object
+        
         return this.sessionState.queue[this.sessionState.currentQueueIndex];
     }
 
