@@ -59,35 +59,52 @@ class Connection {
         switch (message.type) {
             case "join-session": {
                 if (!message.success) return console.log("Failed to join session");
-
+                
+                this.sessionState = message.data.state;
                 this.sessionId = message.data.sessionId;
                 this.clientId = message.data.clientId;
                 this.isAdmin = message.data.isAdmin;
-                updateHash(message.data.sessionId);
+                this.startedByVideo = message.data.startedByVideo;
+                if (!this.startedByVideo) {
+                    updateHash(message.data.sessionId);
 
-                // Load the youtube player
-                this.sessionState = message.data.state;
+                    if (this.sessionState.queue.length > 0) {
+                        this.joinedMidSession = true;
+                        //youtubeIframeShouldCreateEmpty = true;
+                    }
+                } else {
+
+                }
+
+                console.log(youtubeIframeReady)
 
                 if (!youtubeIframeReady) createYoutubeIframe();
 
-                if (this.sessionState.queue.length > 0) {
-                    this.joinedMidSession = true;
+                // if (this.sessionState.queue.length > 0) {
+                //     if (!this.startedByVideo) this.joinedMidSession = true;
 
-                    if (youtubeIframeReady) {
-                        // Make sure the iframe is visible
-                        document.querySelector("iframe").style.visibility = "";
-                        if (document.querySelector("#no-video")) document.querySelector("#no-video").remove();
+                //     console.log(youtubeIframeReady)
 
-                        const videoToPlay = this.getVideoToPlay();
+                //     if (youtubeIframeReady) {
+                //         // Make sure the iframe is visible
+                //         document.querySelector("iframe").style.visibility = "";
+                //         if (document.querySelector("#no-video")) document.querySelector("#no-video").remove();
 
-                        player.cueVideoById(videoToPlay.id, videoToPlay.timestamp);
+                //         const videoToPlay = this.getVideoToPlay();
 
-                        // Playback speed
-                        player.setPlaybackRate(videoToPlay.playbackSpeed);
+                //         player.cueVideoById(videoToPlay.id, videoToPlay.timestamp);
 
-                        player.playVideo();
-                    }
-                }
+                //         // Playback speed
+                //         player.setPlaybackRate(videoToPlay.playbackSpeed);
+
+                //         if (!this.startedByVideo) {
+                //             player.playVideo();
+                //             console.log("play?")
+                //         } else { 
+                //             player.pauseVideo();
+                //         }
+                //     }
+                // }
 
                 // Set the queue
                 this.sessionState.queue.forEach(video => addVideoToQueueHtml(video));
@@ -122,17 +139,24 @@ class Connection {
 
                 this.sessionState = message.data.state;
 
-                // Check if the message was sent by me
-                if (this.sentByMe(message))
-                    return;
-
                 if (!youtubeIframeReady)
                    return createYoutubeIframe();
 
                 const video = this.getVideoToPlay();
 
+                // if (video.hasEnded) {
+                //     youtubeVideoHasLoaded = false;
+                // }
+
+                // Check if the message was sent by me
+                if (this.sentByMe(message))
+                    return;
+
                 console.log("Video is at %s, but should be at %s according to the server", player.getCurrentTime(), video.timestamp);
                 console.log("Message took in total %s seconds", (now() - message.originalMessage.date) / 1000)
+
+                // Playback speed
+                player.setPlaybackRate(video.playbackSpeed);
 
                 // Set timestamp
                 const timeDiff = Math.abs(player.getCurrentTime() - video.timestamp);
@@ -140,17 +164,38 @@ class Connection {
 
                 console.log("Time desync:", timeDiff);
 
-                if (timeDiff > maxTimeDesync)
-                    player.seekTo(video.timestamp, true);
-
-                // Playback speed
-                player.setPlaybackRate(video.playbackSpeed);
-
-                // Set paused or played
-                if (video.isPaused)
+                if (video.hasEnded) {
                     player.pauseVideo();
-                else
-                    player.playVideo();
+                    player.seekTo(video.duration * 60);
+                    youtubeVideoFirstLoad = false;
+                } else {
+                    if (timeDiff > maxTimeDesync) {
+                        player.seekTo(video.timestamp, true);
+                        player.playVideo();
+                    } else {
+                        // Set paused or played
+                        if (video.isPaused)
+                            player.pauseVideo();
+                        else
+                            player.playVideo();
+                    }
+                }
+
+                //if (!video.hasEnded) {
+                    // if (timeDiff > maxTimeDesync && !video.hasEnded) {
+                    //     player.seekTo(video.timestamp, true);
+                    //     player.playVideo();
+                    // } else {
+                    //     // Set paused or played
+                    //     if (video.isPaused)
+                    //         player.pauseVideo();
+                    //     else
+                    //         player.playVideo();
+                    // }
+    
+                // } else {
+                //     youtubeVideoHasLoaded = false;
+                // }
 
                 break;
             }
@@ -159,6 +204,7 @@ class Connection {
                 const videoToPlay = this.sessionState.queue[this.sessionState.currentQueueIndex];
 
                 youtubeVideoHasLoaded = false;
+                youtubeVideoFirstLoad = true;
 
                 removeTrackProgress();
                 addProgressBar(videoToPlay.id);
@@ -284,12 +330,26 @@ class Connection {
                 youtubeIgnoreEventChange = true;
                 setTimeout(() => youtubeIgnoreEventChange = false, 1000);
 
+                const video = this.getVideoToPlay();
+
+                if (video.hasEnded) {
+                    console.log("video ended. Stopping");
+                    youtubeVideoFirstLoad = false;
+                    player.pauseVideo();
+                    return;
+                }
+
                 const margin = 1;
-                this.getVideoToPlay().timestamp = message.data.timestamp + margin;
-
-                youtubeVideoFirstLoad = false;
-
-                player.seekTo(this.getVideoToPlay().timestamp);
+                const timestamp = message.data.timestamp + margin;
+                console.log(message.data.timestamp, video.duration * 60)
+                //if (message.data.timestamp < video.duration * 60 + margin) {
+                    video.timestamp = message.data.timestamp + margin;
+                    player.seekTo(video.timestamp);
+                // } else {
+                //     video.timestamp = video.duration * 60;
+                //     player.seekTo(video.timestamp);
+                //     player.stopVideo();
+                // }
 
                 break;
             }
@@ -304,7 +364,7 @@ class Connection {
     getVideoToPlay() {
         if (!this.sessionState) return;
         if (JSON.stringify(this.sessionState) == "{}") return; // Is an empty object
-        
+
         return this.sessionState.queue[this.sessionState.currentQueueIndex];
     }
 

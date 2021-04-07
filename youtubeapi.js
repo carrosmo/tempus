@@ -7,6 +7,7 @@ var player;
 var youtubeIframeReady = false;
 var youtubeHasStartedVideo = false;
 var youtubeVideoFirstLoad = true;
+var youtubeIframeShouldCreateEmpty = false;
 var youtubeIgnoreEventChange = true;
 var youtubeTimeToLoad = null;
 var youtubeStartedLoadingAt = null;
@@ -15,8 +16,7 @@ var youtubeVideoHasLoaded = false;
 var youtubeIframeHasVideo = false;
 
 function createYoutubeIframe() {
-    //if (connection.sessionState.queue.length == 0) return; // If no videos exists
-    if (youtubeIframeReady) return;
+    if (youtubeIframeReady) return console.log("ingore");
 
     // If the script already is loaded
     if (document.querySelector("#www-widgetapi-script"))
@@ -39,8 +39,8 @@ function onYouTubeIframeAPIReady() {
     var videoId;
 
     // Create an empty iframe
-    if (!connection || !connection.sessionState || JSON.stringify(connection.sessionState) == "{}" || connection.sessionState.queue.length == 0) {
-        videoId = "oxqdrquXuec";
+    if (youtubeIframeShouldCreateEmpty || !connection || !connection.sessionState || JSON.stringify(connection.sessionState) == "{}" || connection.sessionState.queue.length == 0) {
+        videoId = "";
         youtubeIframeHasVideo = false;
     } else {
         videoId = connection.getVideoToPlay().id;
@@ -70,10 +70,9 @@ function onYouTubeIframeAPIReady() {
 
 function onPlayerReady() {
     youtubeIframeReady = true;
+    youtubeIgnoreEventChange = false;
 
     if (!youtubeIframeHasVideo) {
-        youtubeIgnoreEventChange = false;
-
         const frame = document.querySelector("iframe");
         const noVid = document.createElement("h1");
         noVid.id = "no-video";
@@ -83,6 +82,12 @@ function onPlayerReady() {
 
         frame.style.visibility = "hidden";
 
+        return;
+    }
+
+    if (connection.startedByVideo && !connection.getVideoToPlay().isPaused) return;
+    if (connection.getVideoToPlay().hasEnded) {
+        youtubeVideoFirstLoad = false;
         return;
     }
 
@@ -97,8 +102,11 @@ function onPlayerReady() {
     // Set paused or played
     if (connection.joinedMidSession) {
         if (video.isPaused) {
+            player.playVideo();
             player.pauseVideo();
             youtubeVideoFirstLoad = false;
+
+            connection.send({ type: "give-me-timestamp" });
         } else {
             player.playVideo();
         }
@@ -119,7 +127,7 @@ function onPlayerStateChange(event) {
         youtubeShouldSeekToStart = false;
     }
 
-    if (event.data === -1) console.log("LOADED???", youtubeVideoHasLoaded, connection.joinedMidSession);
+    if (event.data === -1) console.log("LOADED???", youtubeVideoHasLoaded, connection.joinedMidSession, connection.getVideoToPlay().hasEnded);
 
     // When the video loads
     if (event.data === -1) {
@@ -131,7 +139,7 @@ function onPlayerStateChange(event) {
             youtubeVideoHasLoaded = true;
             youtubeVideoFirstLoad = true;
         }
-        if (connection.joinedMidSession) {
+        if (connection.joinedMidSession && !connection.getVideoToPlay().isPaused && !connection.getVideoToPlay().hasEnded) {
             console.log("Playing video (joined mid session)")
             youtubeVideoFirstLoad = true;
             player.playVideo();
@@ -146,6 +154,14 @@ function onPlayerStateChange(event) {
             addProgressBar(player.getVideoData()['video_id']);
         }
 
+        // if (connection.getVideoToPlay().hasEnded && youtubeVideoFirstLoad) {
+        //     connection.send({ type: "video-loaded", date: now() });
+        //     this.connection.getVideoToPlay().hasEnded = false;
+        //     player.pauseVideo();
+        //     youtubeVideoFirstLoad = true;
+        //     return;
+        // }
+
         if (connection.isAdmin) {
             connection.send({
                 type: "state-update",
@@ -158,6 +174,9 @@ function onPlayerStateChange(event) {
                 data: { ...getVideoData(), firstLoad: youtubeVideoFirstLoad },
                 date: now()
             });
+
+            connection.joinedMidSession = false;
+            youtubeVideoHasLoaded = true;
         }
 
         if (connection.joinedMidSession) {
@@ -179,57 +198,18 @@ function onPlayerStateChange(event) {
             }
             //youtubeVideoFirstLoad = false;
 
-            connection.send({ type: "give-me-timestamp" });
-
-            // youtubeTimeToLoad = (now() - youtubeStartedLoadingAt) / 1000;
-
-            // console.log("Youtube took %s seconds to start playing video", youtubeTimeToLoad, connection.getVideoToPlay());
-
-            // const time = connection.getVideoToPlay().timestamp + youtubeTimeToLoad + 0.5;
-
-            // youtubeIgnoreEventChange = true;
-            // player.seekTo(time);
-            // setTimeout(() => youtubeIgnoreEventChange = false, 2000);
-
-            // youtubeVideoFirstLoad = false;
-            // youtubeStartedLoadingAt = null;
-
-            // connection.send({
-            //     type: "state-update",
-            //     data: { ...getVideoData(), timestamp: time, firstLoad: youtubeVideoFirstLoad },
-            //     date: now()
-            // });    
+            if (!connection.getVideoToPlay().hasEnded) {
+                connection.send({ type: "give-me-timestamp" });
+            }
         }
 
-        //youtubeVideoFirstLoad = false;
-
-        // If the video loaded for the first time
-        // if (youtubeVideoFirstLoad) {
-        //     //youtubeVideoFirstLoad = false;
-        //     // if (connection.getVideoToPlay().timestamp == 0) {
-        //     //     youtubeVideoFirstLoad = false;
-        //     //     return;
-        //     // }
-
-        //     // Don't skip forward if the video is paused
-        //     if (connection.getVideoToPlay().isPaused) {
-        //         youtubeVideoFirstLoad = false;
-        //         return;
-        //     }
-
-        //     youtubeTimeToLoad = (now() - youtubeStartedLoadingAt) / 1000;
-
-        //     console.log("Youtube took %s seconds to start playing video", youtubeTimeToLoad, connection.getVideoToPlay());
-
-        //     // youtubeIgnoreEventChange = true;
-
-        //     // player.seekTo(connection.getVideoToPlay().timestamp + youtubeTimeToLoad);
-
-        //     // setTimeout(() => youtubeIgnoreEventChange = false, 1000);
-
-        //     youtubeVideoFirstLoad = false;
-        //     youtubeStartedLoadingAt = null;
-        // }
+        if (!youtubeVideoFirstLoad && /* connection.joinedMidSession && */ connection.getVideoToPlay().hasEnded) {
+            connection.send({
+                type: "state-update",
+                data: { ...getVideoData(), hasEnded: false },
+                date: now()
+            });
+        }
     }
     if (event.data === YT.PlayerState.PAUSED) {
         console.log("PAUSED")
@@ -247,14 +227,26 @@ function onPlayerStateChange(event) {
         console.log("Video ended");
 
         youtubeVideoFirstLoad = false;
+        //youtubeVideoHasLoaded = false;
 
-        if (!connection.isAdmin) return;
+        connection.getVideoToPlay().hasEnded = true;
 
-        // Try to play the next video in the queue (use the queue on the server to avoid desync)
-        connection.send({
-            type: "play-next-video",
-            date: now()
-        });
+        //player.pauseVideo();
+
+        if (connection.isAdmin) {
+            connection.send({
+                type: "video-ended",
+                date: now()
+            });
+        }
+
+        // if (!connection.isAdmin) return;
+
+        // // Try to play the next video in the queue (use the queue on the server to avoid desync)
+        // connection.send({
+        //     type: "video-ended",
+        //     date: now()
+        // });
     }
     if (event.data === YT.PlayerState.CUED) {
         console.log("Que:ed");
