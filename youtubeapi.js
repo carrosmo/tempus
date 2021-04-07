@@ -291,8 +291,48 @@ function queueVideo(event = null, url) {
     if (event != null) {
         event.preventDefault();
     }
+    if(!isValidYoutubeURL(url)) {
+        getSearchResults(url);
+        document.getElementById('room').value = "";
+        return;
+    }
     connection.send({ type: "add-video-to-queue", data: { url } });
     document.getElementById('room').value = "";
+}
+
+function getVideoId(url) {
+    url = url.split(" ").join(""); // remove spaces
+
+    if (!this.isValidHttpUrl(url))
+        return;
+
+    const hostname = new URL(url).hostname.replace("www.", "");
+
+    if (hostname === "youtube.com" || hostname === "youtu.be") {
+        if (hostname === "youtube.com")
+            return new URL(url).search.replace("?v=", "");
+        if (hostname === "youtu.be")
+            return new URL(url).pathname.replace("/", "");
+    }
+
+    // Wasn't a youtube url
+    return;
+}
+
+function isValidYoutubeURL(url) {
+    return this.getVideoId(url) != null;
+}
+
+function isValidHttpUrl(string) {
+    let url;
+
+    try {
+        url = new URL(string);
+    } catch (_) {
+        return false;
+    }
+
+    return url.protocol === "http:" || url.protocol === "https:";
 }
 
 function updateHash(room) {
@@ -346,6 +386,10 @@ function createSessionWithLink(link) {
 }
 
 function getSearchResults(search) {
+    document.querySelector(`[class='result-container']`).innerHTML = "";
+    document.querySelector(`[class='result-container']`).innerHTML += `<div class="lds-dual-ring"></div>`
+    document.querySelector(`[class='result-container']`).style.visibility = "visible";
+    document.querySelector(`[class='result-container']`).innerHTML += `<button class="route exit" onclick="removeResults();">X</button>`
     connection.send({
         type: "get-search-results",
         data: { query: search },
