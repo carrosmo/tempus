@@ -54,7 +54,7 @@ class Connection {
     handleMessage(msg) {
         var message = JSON.parse(msg.data);
 
-        if (message.type != "ping") console.log("Recieved message sent by %s", message.originalMessage.sentBy, message);
+        if (message.type != "ping") console.log("Recieved message sent by %s", message.originalMessage.sentBy, JSON.parse(JSON.stringify(message)));
 
         switch (message.type) {
             case "join-session": {
@@ -108,6 +108,10 @@ class Connection {
 
                 // Set the queue
                 this.sessionState.queue.forEach(video => addVideoToQueueHtml(video));
+
+                // Add progress bar if joined mid session
+                if (this.joinedMidSession)
+                    addProgressBar(this.getVideoToPlay().id);
 
                 console.log("Joined session:", this.sessionId);
 

@@ -88,7 +88,7 @@ function onPlayerReady() {
     if (connection.startedByVideo && !connection.getVideoToPlay().isPaused) return;
     if (connection.getVideoToPlay().hasEnded) {
         youtubeVideoFirstLoad = false;
-        return;
+        return console.log("vid end");
     }
 
     youtubeIgnoreEventChange = true;
@@ -139,10 +139,14 @@ function onPlayerStateChange(event) {
             youtubeVideoHasLoaded = true;
             youtubeVideoFirstLoad = true;
         }
-        if (connection.joinedMidSession && !connection.getVideoToPlay().isPaused && !connection.getVideoToPlay().hasEnded) {
-            console.log("Playing video (joined mid session)")
-            youtubeVideoFirstLoad = true;
-            player.playVideo();
+        if (connection.joinedMidSession && !connection.getVideoToPlay().isPaused/* && !connection.getVideoToPlay().hasEnded*/) {
+            if (connection.getVideoToPlay().hasEnded) {
+                //youtubeVideoFirstLoad = false;
+            } else {
+                console.log("Playing video (joined mid session)")
+                youtubeVideoFirstLoad = true;
+                player.playVideo();
+            }
         }
     }
 
@@ -192,7 +196,7 @@ function onPlayerStateChange(event) {
         if (youtubeVideoFirstLoad && connection.joinedMidSession) {
 
             // Don't skip forward if the video is paused
-            if (connection.getVideoToPlay().isPaused) {
+            if (connection.getVideoToPlay().isPaused || connection.getVideoToPlay().hasEnded) {
                 youtubeVideoFirstLoad = false;
                 return;
             }
@@ -233,12 +237,12 @@ function onPlayerStateChange(event) {
 
         //player.pauseVideo();
 
-        if (connection.isAdmin) {
+        //if (connection.isAdmin) {
             connection.send({
                 type: "video-ended",
                 date: now()
             });
-        }
+        //}
 
         // if (!connection.isAdmin) return;
 

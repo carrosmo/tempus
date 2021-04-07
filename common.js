@@ -107,8 +107,15 @@ function trackProgress(id) {
         if (!player || !youtubeIframeReady) return;
 
         // The last div (progressbar-bar) and the last (and only) element of it (progress)
-        if (document.getElementById('progress'))
-            document.getElementById('progress').style.width = `${(player.getCurrentTime())/(player.getDuration())*100}%`
+        if (document.getElementById('progress')) {
+            var time = 0;
+            if (connection.getVideoToPlay() && connection.getVideoToPlay().hasEnded)
+                time = player.getDuration();
+            else 
+                time = player.getCurrentTime();
+
+            document.getElementById('progress').style.width = `${time/(player.getDuration())*100}%`
+        }
     }, 66 /* 15 fps */)
 }
 
