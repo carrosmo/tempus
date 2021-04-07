@@ -83,7 +83,8 @@ footer
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000;
+  z-index: 3;
+  background-color: black;
 }
 #player > #no-video
 {
@@ -346,7 +347,8 @@ h1
   text-decoration: none;
   display: inline-block;
   font-size: 16px;
-  margin: 4px 2px;
+  margin: 4x 2px;
+  margin-top: 2rem;
   cursor: pointer;
   font-family: 'Roboto', sans-serif;
   outline: solid;
@@ -355,6 +357,24 @@ h1
 {
   transition: 0.1s;
   outline-color: rgb(250, 0, 0);
+}
+
+.lds-dual-ring {
+  display: inline-block;
+  width: 80px;
+  height: 80px;
+  margin-top: 10rem;
+}
+.lds-dual-ring:after {
+  content: " ";
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin: 8px;
+  border-radius: 50%;
+  border: 6px solid #fff;
+  border-color: #fff transparent #fff transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
 }
 
 .video-title {
@@ -429,10 +449,11 @@ form {
   left: 0;
   right: 0;
   text-align: center;
-  background-color: rgba(0, 0, 0, 0.85);
+  background-color: rgba(0, 0, 0, 0.95);
   height: 100%;
   width: 100%;
   top: 0;
+  z-index: 4;
 }
 .mini
 {
@@ -497,6 +518,15 @@ form {
         bottom: 0;
         opacity: 0;
     }
+}
+
+@keyframes lds-dual-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .line-clamp {

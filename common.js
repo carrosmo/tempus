@@ -47,12 +47,6 @@ const addVideoToQueueHtml = (video) => {
     showSnack(`"${video.title}" added to queue`, 1000)
 }
 
-function parseSearchResult(results) {
-    var displayArray = [];
-    results.results.items.forEach(item => displayArray.push([item.snippet.title, item.snippet.channelTitle, item.snippet.thumbnails.medium.url, item.id.videoId]));
-    return displayArray;
-}
-
 /**
  * 0 = title
  * 1 = channel name
@@ -61,9 +55,8 @@ function parseSearchResult(results) {
  */
 
 function drawSearchResults(displayArray) {
+    document.querySelector(`[class='result-container']`).innerHTML = "";
     document.querySelector(`[class='result-container']`).innerHTML += `<h1>Results</h1>`
-    document.querySelector(`[class='result-container']`).innerHTML += `<button class="route exit" onclick="removeResults();">X</button>`
-    document.querySelector(`[class='result-container']`).style.visibility = "visible";
     displayArray.forEach(videoData => document.querySelector(`[class='result-container']`).innerHTML += `
     <div class="video-div video mini">
     <div class="video-thumbnail-container" onclick="queueVideo(null, 'https://www.youtube.com/watch?v=${videoData[3]}'); removeResults();">
