@@ -40,7 +40,7 @@ function onYouTubeIframeAPIReady() {
 
     // Create an empty iframe
     if (youtubeIframeShouldCreateEmpty || !connection || !connection.sessionState || JSON.stringify(connection.sessionState) == "{}" || connection.sessionState.queue.length == 0) {
-        videoId = "oxqdrquXuec";
+        videoId = "";
         youtubeIframeHasVideo = false;
     } else {
         videoId = connection.getVideoToPlay().id;
