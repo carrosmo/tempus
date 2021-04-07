@@ -306,7 +306,7 @@ class Connection {
                 break;
             }
             case "get-search-results": {
-                drawSearchResults(message.data.results);
+                drawSearchResults(message.data.results, message.originalMessage.data.query);
                 break;
             }
             case "broadcast-clients": {

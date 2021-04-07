@@ -54,24 +54,43 @@ const addVideoToQueueHtml = (video) => {
  * 3 = video id
  */
 
-function drawSearchResults(displayArray) {
-    document.querySelector(`[class='result-container']`).innerHTML = "";
-    document.querySelector(`[class='result-container']`).innerHTML += `<h1>Results</h1>`
-    displayArray.forEach(videoData => document.querySelector(`[class='result-container']`).innerHTML += `
+function drawSearchResults(displayArray, searchQuery) {
+    document.body.classList.add("fixed");
+
+    document.querySelector(".status").style.filter = "blur(1px)";
+    document.querySelector(".nav-bar").style.filter = "blur(1px)";
+    document.querySelector(".container").style.filter = "blur(1px)";
+
+    document.querySelector(".lds-dual-ring").style.visibility = "hidden";
+
+    //document.querySelector(".result-container").innerHTML = `<button class="route exit" onclick="removeResults();">X</button>`
+    // document.querySelector(".result-container").innerHTML += `
+    // <form class="search-input" onsubmit="queueVideo(event, document.getElementById('room').value);" autocomplete="off">
+    //     <input placeholder="Search or Paste URL" value="${searchQuery}">
+    // </form>`;
+
+    document.querySelector(".result-container #videos").innerHTML = "";
+    displayArray.forEach(videoData => document.querySelector(".result-container #videos").innerHTML += `
     <div class="video-div video mini">
-    <div class="video-thumbnail-container" onclick="queueVideo(null, 'https://www.youtube.com/watch?v=${videoData[3]}'); removeResults();">
-        <img class="thumbnail" src=${videoData[2]}>
-    </div>
+        <div class="video-thumbnail-container" onclick="queueVideo(null, 'https://www.youtube.com/watch?v=${videoData[3]}'); removeResults();">
+            <img class="thumbnail" src=${videoData[2]}>
+        </div>
     <div class="video-text-container">
         <div>
             <div class="queue-title line-clamp" onclick="queueVideo(null, 'https://www.youtube.com/watch?v=${videoData[3]}'); removeResults();">${videoData[0]}</div>
             <div class="channel-name">${videoData[1]}</div>
-    </div>`);
+        </div>`);
 }
 
 function removeResults() {
-    document.querySelector(`[class='result-container']`).innerHTML = "";
-    document.querySelector(`[class='result-container']`).style.visibility = "hidden";
+    document.querySelector(".status").style.filter = "";
+    document.querySelector(".nav-bar").style.filter = "";
+    document.querySelector(".container").style.filter = "";
+
+    document.querySelector(".result-container").style.visibility = "hidden";
+    document.querySelector(".lds-dual-ring").style.visibility = "hidden";
+
+    document.body.classList.remove("fixed");
 }
 
 function showSnack(message, ms) {

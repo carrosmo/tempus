@@ -17,8 +17,8 @@
             <h1 id="title">Synct<span id="title-fraction"> - Watch <img src="youtube.png"
                         id="youtube-icon">Together</span></h1>
         </a>
-        <form onsubmit="queueVideo(event, document.getElementById('room').value);" autocomplete="off">
-            <input placeholder="Search or Paste URL" id="room">
+        <form class="url-input" onsubmit="queueVideo(event, this.children[0].value);">
+            <input placeholder="Search or Paste URL" id="room" autocomplete="off">
         </form>
     </div>
     <div class="container">
@@ -42,6 +42,12 @@
         <p id="watching"></p>
     </div>
     <div class="result-container">
+        <div class="lds-dual-ring"></div>
+        <form class="search-input" onsubmit="queueVideo(event, this.children[0].value);">
+            <input placeholder="Search or Paste URL" autocomplete="off">
+        </form>
+        <button class="route exit" onclick="removeResults();">X</button>
+        <div id="videos"></div>
     </div>
     <div id="snackbar" class="">Copied to Clipboard</div>
     <script src="/common.js"></script>

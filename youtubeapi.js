@@ -298,6 +298,7 @@ function queueVideo(event = null, url) {
     }
     connection.send({ type: "add-video-to-queue", data: { url } });
     document.getElementById('room').value = "";
+    removeResults();
 }
 
 function getVideoId(url) {
@@ -386,10 +387,18 @@ function createSessionWithLink(link) {
 }
 
 function getSearchResults(search) {
-    document.querySelector(`[class='result-container']`).innerHTML = "";
-    document.querySelector(`[class='result-container']`).innerHTML += `<div class="lds-dual-ring"></div>`
-    document.querySelector(`[class='result-container']`).style.visibility = "visible";
-    document.querySelector(`[class='result-container']`).innerHTML += `<button class="route exit" onclick="removeResults();">X</button>`
+    if (!search) return;
+
+    document.querySelector(".result-container").style.visibility = "visible";
+    document.querySelector(".lds-dual-ring").visibility = "visible";
+
+    document.querySelector(".search-input input").value = search;
+    document.querySelector(".search-input input").focus();
+
+    document.body.classList.add("fixed");
+
+    document.querySelector(".result-container #videos").innerHTML = "";
+
     connection.send({
         type: "get-search-results",
         data: { query: search },
