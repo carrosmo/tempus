@@ -151,6 +151,13 @@ function updateName() {
     });
 }
 
+document.getElementById('client-name-input').addEventListener("keyup", function(event) {
+    if (event.key === "Enter") {
+        updateName();
+        document.getElementById('client-name-input').blur();
+    }
+});
+
 function togglePlayer(window) {
     switch (window) {
         case "video":

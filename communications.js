@@ -323,7 +323,6 @@ class Connection {
                 {
                     if (!message.success) return console.log(message.error);
 
-                    console.log("log-event!!!!!!!!!!!!!")
                     console.log(message.data)
                     logEvent(message.data.oldName, message.data.name, message.data.event, message.data.video, message.data.date, message.data.color);
                     break;

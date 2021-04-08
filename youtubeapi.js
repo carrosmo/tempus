@@ -139,7 +139,7 @@ function onPlayerStateChange(event) {
             youtubeVideoHasLoaded = true;
             youtubeVideoFirstLoad = true;
         }
-        if (connection.joinedMidSession && !connection.getVideoToPlay().isPaused/* && !connection.getVideoToPlay().hasEnded*/) {
+        if (connection.joinedMidSession && !connection.getVideoToPlay().isPaused /* && !connection.getVideoToPlay().hasEnded*/ ) {
             if (connection.getVideoToPlay().hasEnded) {
                 //youtubeVideoFirstLoad = false;
             } else {
@@ -169,13 +169,13 @@ function onPlayerStateChange(event) {
         if (connection.isAdmin) {
             connection.send({
                 type: "state-update",
-                data: { ...getVideoData(), firstLoad: youtubeVideoFirstLoad },
+                data: {...getVideoData(), firstLoad: youtubeVideoFirstLoad },
                 date: now()
             });
         } else if (!youtubeVideoFirstLoad) {
             connection.send({
                 type: "state-update",
-                data: { ...getVideoData(), firstLoad: youtubeVideoFirstLoad },
+                data: {...getVideoData(), firstLoad: youtubeVideoFirstLoad },
                 date: now()
             });
 
@@ -187,7 +187,7 @@ function onPlayerStateChange(event) {
             if (!youtubeVideoFirstLoad) {
                 connection.send({
                     type: "state-update",
-                    data: { ...getVideoData(), firstLoad: youtubeVideoFirstLoad },
+                    data: {...getVideoData(), firstLoad: youtubeVideoFirstLoad },
                     date: now()
                 });
             }
@@ -210,7 +210,7 @@ function onPlayerStateChange(event) {
         if (!youtubeVideoFirstLoad && /* connection.joinedMidSession && */ connection.getVideoToPlay().hasEnded) {
             connection.send({
                 type: "state-update",
-                data: { ...getVideoData(), hasEnded: false },
+                data: {...getVideoData(), hasEnded: false },
                 date: now()
             });
         }
@@ -238,10 +238,10 @@ function onPlayerStateChange(event) {
         //player.pauseVideo();
 
         //if (connection.isAdmin) {
-            connection.send({
-                type: "video-ended",
-                date: now()
-            });
+        connection.send({
+            type: "video-ended",
+            date: now()
+        });
         //}
 
         // if (!connection.isAdmin) return;
@@ -291,7 +291,7 @@ function queueVideo(event = null, url) {
     if (event != null) {
         event.preventDefault();
     }
-    if(!isValidYoutubeURL(url)) {
+    if (!isValidYoutubeURL(url)) {
         getSearchResults(url);
         document.getElementById('room').value = "";
         return;
@@ -342,14 +342,16 @@ function updateHash(room) {
 
 function displayWatchers(amount) {
     switch (amount) {
-        case 1: {
-            document.getElementById("watching").textContent = `Watching alone.`
-            break;
-        }
-        default: {
-            document.getElementById("watching").textContent = `${amount} people watching.`
-            break;
-        }
+        case 1:
+            {
+                document.getElementById("watching").textContent = `Watching alone.`
+                break;
+            }
+        default:
+            {
+                document.getElementById("watching").textContent = `${amount} people watching.`
+                break;
+            }
     }
 }
 
@@ -375,7 +377,7 @@ function deleteVideo(id) {
 
 function playVideo(id) {
     const index = connection.sessionState.queue.indexOf(connection.sessionState.queue.find(vid => vid.id === id));
-    connection.send({ type: "play-video-from-queue", data: { queueIndex: index }, id: id});
+    connection.send({ type: "play-video-from-queue", data: { queueIndex: index }, id: id });
 }
 
 function createSessionWithLink(link) {
@@ -393,7 +395,7 @@ function getSearchResults(search) {
     document.querySelector(".lds-dual-ring").visibility = "visible";
 
     document.querySelector(".search-input input").value = search;
-    document.querySelector(".search-input input").focus();
+    //document.querySelector(".search-input input").focus(); commenting out this part since it seems to cause problems for mobile users.
 
     document.body.classList.add("fixed");
 
@@ -406,6 +408,6 @@ function getSearchResults(search) {
     });
 }
 
-window.onhashchange = function () {
+window.onhashchange = function() {
     window.location.reload();
 }
