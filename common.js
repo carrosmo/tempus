@@ -1,10 +1,10 @@
-Date.prototype.stdTimezoneOffset = function () {
+Date.prototype.stdTimezoneOffset = function() {
     var jan = new Date(this.getFullYear(), 0, 1);
     var jul = new Date(this.getFullYear(), 6, 1);
     return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
 }
 
-Date.prototype.isDstObserved = function () {
+Date.prototype.isDstObserved = function() {
     return this.getTimezoneOffset() < this.stdTimezoneOffset();
 }
 
@@ -12,7 +12,7 @@ const now = () => {
     return new Date().getTime();
     var today = new Date();
     var offset = today.getTimezoneOffset();
-    var d = new Date(); 
+    var d = new Date();
     d.setMinutes(d.getMinutes() + offset);
     return d.getTime();
 }
@@ -99,19 +99,20 @@ function showSnack(message, ms) {
     snack.className = "show";
     snack.textContent = message;
 
-    setTimeout(function () { snack.className = snack.className.replace("show", ""); }, ms);
+    setTimeout(function() { snack.className = snack.className.replace("show", ""); }, ms);
 }
 
 function addProgressBar(id) {
     if (document.querySelector(`[data-id='${id}']`))
         document.querySelector(`[data-id='${id}']`).innerHTML += `<div id="progress-bar"><div id="progress"></div></div>`;
-    
-    if(trackingProgress == false) {
+
+    if (trackingProgress == false) {
         trackProgress(id);
     }
 }
 
 var trackingProgress = false;
+
 function trackProgress(id) {
     trackingProgress = true
     console.log("started to track progress")
@@ -123,18 +124,106 @@ function trackProgress(id) {
             var time = 0;
             if (connection.getVideoToPlay() && connection.getVideoToPlay().hasEnded)
                 time = player.getDuration();
-            else 
+            else
                 time = player.getCurrentTime();
 
-            document.getElementById('progress').style.width = `${time/(player.getDuration())*100}%`
+            document.getElementById('progress').style.width = `${time / (player.getDuration()) * 100}%`
         }
-    }, 66 /* 15 fps */)
+    }, 66 /* 15 fps */ )
 }
 
 function removeTrackProgress() {
     if (document.contains(document.getElementById('progress-bar'))) {
         document.getElementById('progress-bar').remove();
     }
+}
+
+function updateName() {
+    const input = document.getElementById('client-name-input');
+    if (input.textContent.length > 15) {
+        input.textContent = input.textContent.slice(0, 15);
+        showSnack("Name too long! Max length: 15", 2000)
+    }
+    connection.send({
+        type: "name-update",
+        data: { name: input.textContent },
+        date: now()
+    });
+}
+
+function togglePlayer(window) {
+    switch (window) {
+        case "video":
+            {
+                document.querySelector(`[class='player-container']`).style.display = "block"; // Video visible
+                document.querySelector(`#toggle-video`).classList.add("marked"); // Video toggle marked
+                document.getElementById('log').style.display = "none"; // Log hidden
+                document.getElementById('toggle-log').classList.remove("marked"); // Log toggle unmakred
+                break;
+            }
+        case "log":
+            {
+                document.querySelector(`[class='player-container']`).style.display = "none"; // Video hidden
+                document.querySelector(`#toggle-video`).classList.remove("marked"); // Video toggle unmarked
+                document.getElementById('log').style.display = "block"; // Log visible
+                document.getElementById('toggle-log').classList.add("marked"); // Log toggle marked
+                break;
+            }
+    }
+}
+
+function logEvent(oldName = "", name, event, video = "", date, color) {
+    switch (event) {
+        case "paused":
+            { // Works mostly
+                drawEvent(name, `paused the video`, date, color)
+                break;
+            }
+        case "unpaused":
+            { // Works mostly
+                drawEvent(name, `unpaused the video`, date, color)
+                break;
+            }
+        case "client-joined":
+            { // Works
+                drawEvent(name, `joined the room`, date, color)
+                break;
+            }
+        case "client-left":
+            { // Works
+                drawEvent(name, `left the room`, date, color)
+                break;
+            }
+        case "video-play":
+            { // Works
+                drawEvent(name, `played the video: "${video}"`, date, color)
+                break;
+            }
+        case "video-queue":
+            { // Works
+                drawEvent(name, `queued the video: "${video}"`, date, color)
+                break;
+            }
+        case "video-delete":
+            { // Works
+                drawEvent(name, `deleted the video: "${video}"`, date, color)
+                break;
+            }
+        case "name-update":
+            { // Works
+                drawEvent(name, `changed their name from: "${oldName}"`, date, color)
+                break;
+            }
+    }
+}
+
+function drawEvent(name, text, date, color) {
+    document.querySelector(`[class='event-container']`).innerHTML += `
+    <div class="event">
+        <span class="name" style="color: ${color};">${name}</span>
+        <span class="event-text">${text}</span>
+        <span class="time">${date}</span>
+    </div>`
 }
 
 function a() {

@@ -8,7 +8,7 @@
     <title>Synct</title>
     <link type="text/css" rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400&display=swap" rel="stylesheet">
-    <link rel="shortcut icon" type="image/jpg" href="/synct.png"/>
+    <link rel="shortcut icon" type="image/jpg" href="/synct.png" />
 </head>
 
 <body>
@@ -22,9 +22,17 @@
         </form>
     </div>
     <div class="container">
+        <button id="toggle-video" class="info-toggle marked" onclick="togglePlayer('video')">Video</button>
+        <button id="toggle-log" class="info-toggle" style="margin-left: 3.5rem;"
+            onclick="togglePlayer('log')">Log</button>
         <div class="player-container">
             <div id="player">
                 <h1 id="no-video">Please queue a video</h1>
+            </div>
+        </div>
+        <div id="log" style="display: none;">
+            <div class="event-container">
+                <!-- Events go here dynamically -->
             </div>
         </div>
         <div class="queue-container">
@@ -40,6 +48,7 @@
     <div class="status">
         <button id="invite" onclick="invite(window.location.href)">Invite</button>
         <p id="watching"></p>
+        <p onblur="updateName()" contenteditable="true" id="client-name-input"></p>
     </div>
     <div class="result-container">
         <div class="lds-dual-ring"></div>

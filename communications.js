@@ -1,4 +1,3 @@
-
 // Websockets
 
 const defaultSessionState = {
@@ -26,7 +25,7 @@ class Connection {
         // Receiving message
         this.conn.onmessage = this.handleMessage.bind(this);
 
-        this.conn.onerror = function (event) {
+        this.conn.onerror = function(event) {
             showSnack("Error: Could not connect to the server", 1000)
         };
     }
@@ -57,135 +56,139 @@ class Connection {
         if (message.type != "ping") console.log("Recieved message sent by %s", message.originalMessage.sentBy, JSON.parse(JSON.stringify(message)));
 
         switch (message.type) {
-            case "join-session": {
-                if (!message.success) return console.log("Failed to join session");
-                
-                this.sessionState = message.data.state;
-                this.sessionId = message.data.sessionId;
-                this.clientId = message.data.clientId;
-                this.isAdmin = message.data.isAdmin;
-                this.startedByVideo = message.data.startedByVideo;
-                if (!this.startedByVideo) {
-                    updateHash(message.data.sessionId);
+            case "join-session":
+                {
+                    if (!message.success) return console.log("Failed to join session");
 
-                    if (this.sessionState.queue.length > 0) {
-                        this.joinedMidSession = true;
-                        //youtubeIframeShouldCreateEmpty = true;
-                    }
-                } else {
+                    this.sessionState = message.data.state;
+                    this.sessionId = message.data.sessionId;
+                    this.clientId = message.data.clientId;
+                    this.isAdmin = message.data.isAdmin;
+                    this.startedByVideo = message.data.startedByVideo;
+                    if (!this.startedByVideo) {
+                        updateHash(message.data.sessionId);
 
-                }
-
-                console.log(youtubeIframeReady)
-
-                if (!youtubeIframeReady) createYoutubeIframe();
-
-                // if (this.sessionState.queue.length > 0) {
-                //     if (!this.startedByVideo) this.joinedMidSession = true;
-
-                //     console.log(youtubeIframeReady)
-
-                //     if (youtubeIframeReady) {
-                //         // Make sure the iframe is visible
-                //         document.querySelector("iframe").style.visibility = "";
-                //         if (document.querySelector("#no-video")) document.querySelector("#no-video").remove();
-
-                //         const videoToPlay = this.getVideoToPlay();
-
-                //         player.cueVideoById(videoToPlay.id, videoToPlay.timestamp);
-
-                //         // Playback speed
-                //         player.setPlaybackRate(videoToPlay.playbackSpeed);
-
-                //         if (!this.startedByVideo) {
-                //             player.playVideo();
-                //             console.log("play?")
-                //         } else { 
-                //             player.pauseVideo();
-                //         }
-                //     }
-                // }
-
-                // Set the queue
-                this.sessionState.queue.forEach(video => addVideoToQueueHtml(video));
-
-                // Add progress bar if joined mid session
-                if (this.joinedMidSession)
-                    addProgressBar(this.getVideoToPlay().id);
-
-                console.log("Joined session:", this.sessionId);
-
-                // Start a periodic timestamp update
-                if (this.isAdmin) {
-                    console.log("Started timestamp update interval");
-                    setInterval(() => {
-                        // Don't update timestamp if video is paused
-                        if (this.getVideoToPlay() && !this.getVideoToPlay().isPaused && youtubeIframeReady) {
-                            this.send({ type: "timestamp-update", data: { timestamp: player.getCurrentTime() }, date: now() });
+                        if (this.sessionState.queue.length > 0) {
+                            this.joinedMidSession = true;
+                            //youtubeIframeShouldCreateEmpty = true;
                         }
-                    }, 10000);
-                }
-
-                break;
-            }
-            case "ping": {
-                this.send({ type: "pong" });
-
-                break;
-            }
-            case "state-update": {
-                if (!message.success) return console.log(message.error);
-
-                youtubeIgnoreEventChange = true;
-                setTimeout(() => youtubeIgnoreEventChange = false, 500);
-
-                // TODO check if the video is different from the one playing
-
-                this.sessionState = message.data.state;
-
-                if (!youtubeIframeReady)
-                   return createYoutubeIframe();
-
-                const video = this.getVideoToPlay();
-
-                // if (video.hasEnded) {
-                //     youtubeVideoHasLoaded = false;
-                // }
-
-                // Check if the message was sent by me
-                if (this.sentByMe(message))
-                    return;
-
-                console.log("Video is at %s, but should be at %s according to the server", player.getCurrentTime(), video.timestamp);
-                console.log("Message took in total %s seconds", (now() - message.originalMessage.date) / 1000)
-
-                // Playback speed
-                player.setPlaybackRate(video.playbackSpeed);
-
-                // Set timestamp
-                const timeDiff = Math.abs(player.getCurrentTime() - video.timestamp);
-                const maxTimeDesync = 1; // in seconds
-
-                console.log("Time desync:", timeDiff);
-
-                if (video.hasEnded) {
-                    player.pauseVideo();
-                    player.seekTo(video.duration * 60);
-                    youtubeVideoFirstLoad = false;
-                } else {
-                    if (timeDiff > maxTimeDesync) {
-                        player.seekTo(video.timestamp, true);
-                        player.playVideo();
                     } else {
-                        // Set paused or played
-                        if (video.isPaused)
-                            player.pauseVideo();
-                        else
-                            player.playVideo();
-                    }
-                }
 
-                //if (!video.hasEnded) {
+                    }
+
+                    const input = document.getElementById('client-name-input').textContent = this.clientId;
+                    console.log(youtubeIframeReady)
+
+                    if (!youtubeIframeReady) createYoutubeIframe();
+
+                    // if (this.sessionState.queue.length > 0) {
+                    //     if (!this.startedByVideo) this.joinedMidSession = true;
+
+                    //     console.log(youtubeIframeReady)
+
+                    //     if (youtubeIframeReady) {
+                    //         // Make sure the iframe is visible
+                    //         document.querySelector("iframe").style.visibility = "";
+                    //         if (document.querySelector("#no-video")) document.querySelector("#no-video").remove();
+
+                    //         const videoToPlay = this.getVideoToPlay();
+
+                    //         player.cueVideoById(videoToPlay.id, videoToPlay.timestamp);
+
+                    //         // Playback speed
+                    //         player.setPlaybackRate(videoToPlay.playbackSpeed);
+
+                    //         if (!this.startedByVideo) {
+                    //             player.playVideo();
+                    //             console.log("play?")
+                    //         } else { 
+                    //             player.pauseVideo();
+                    //         }
+                    //     }
+                    // }
+
+                    // Set the queue
+                    this.sessionState.queue.forEach(video => addVideoToQueueHtml(video));
+
+                    // Add progress bar if joined mid session
+                    if (this.joinedMidSession)
+                        addProgressBar(this.getVideoToPlay().id);
+
+                    console.log("Joined session:", this.sessionId);
+
+                    // Start a periodic timestamp update
+                    if (this.isAdmin) {
+                        console.log("Started timestamp update interval");
+                        setInterval(() => {
+                            // Don't update timestamp if video is paused
+                            if (this.getVideoToPlay() && !this.getVideoToPlay().isPaused && youtubeIframeReady) {
+                                this.send({ type: "timestamp-update", data: { timestamp: player.getCurrentTime() }, date: now() });
+                            }
+                        }, 10000);
+                    }
+
+                    break;
+                }
+            case "ping":
+                {
+                    this.send({ type: "pong" });
+
+                    break;
+                }
+            case "state-update":
+                {
+                    if (!message.success) return console.log(message.error);
+
+                    youtubeIgnoreEventChange = true;
+                    setTimeout(() => youtubeIgnoreEventChange = false, 500);
+
+                    // TODO check if the video is different from the one playing
+
+                    this.sessionState = message.data.state;
+
+                    if (!youtubeIframeReady)
+                        return createYoutubeIframe();
+
+                    const video = this.getVideoToPlay();
+
+                    // if (video.hasEnded) {
+                    //     youtubeVideoHasLoaded = false;
+                    // }
+
+                    // Check if the message was sent by me
+                    if (this.sentByMe(message))
+                        return;
+
+                    console.log("Video is at %s, but should be at %s according to the server", player.getCurrentTime(), video.timestamp);
+                    console.log("Message took in total %s seconds", (now() - message.originalMessage.date) / 1000)
+
+                    // Playback speed
+                    player.setPlaybackRate(video.playbackSpeed);
+
+                    // Set timestamp
+                    const timeDiff = Math.abs(player.getCurrentTime() - video.timestamp);
+                    const maxTimeDesync = 1; // in seconds
+
+                    console.log("Time desync:", timeDiff);
+
+                    if (video.hasEnded) {
+                        player.pauseVideo();
+                        player.seekTo(video.duration * 60);
+                        youtubeVideoFirstLoad = false;
+                    } else {
+                        if (timeDiff > maxTimeDesync) {
+                            player.seekTo(video.timestamp, true);
+                            player.playVideo();
+                        } else {
+                            // Set paused or played
+                            if (video.isPaused)
+                                player.pauseVideo();
+                            else
+                                player.playVideo();
+                        }
+                    }
+
+                    //if (!video.hasEnded) {
                     // if (timeDiff > maxTimeDesync && !video.hasEnded) {
                     //     player.seekTo(video.timestamp, true);
                     //     player.playVideo();
@@ -196,172 +199,192 @@ class Connection {
                     //     else
                     //         player.playVideo();
                     // }
-    
-                // } else {
-                //     youtubeVideoHasLoaded = false;
-                // }
 
-                break;
-            }
-            case "play-video-from-queue": {
-                this.sessionState = message.data.state;
-                const videoToPlay = this.sessionState.queue[this.sessionState.currentQueueIndex];
+                    // } else {
+                    //     youtubeVideoHasLoaded = false;
+                    // }
 
-                youtubeVideoHasLoaded = false;
-                youtubeVideoFirstLoad = true;
-
-                removeTrackProgress();
-                addProgressBar(videoToPlay.id);
-
-                // Reset the joined mid session flag as the client should be considered "joined from the start of the video"
-                this.joinedMidSession = false; 
-
-                if (!youtubeIframeReady) {
-                    createYoutubeIframe();
-                } else {
-                    // Make sure the iframe is visible
-                    document.querySelector("iframe").style.visibility = "";
-                    if (document.querySelector("#no-video")) document.querySelector("#no-video").remove();
-
-                    youtubeIframeHasVideo = true;
-                    player.cueVideoById(videoToPlay.id, videoToPlay.timestamp);
-
-                    // Playback speed
-                    player.setPlaybackRate(videoToPlay.playbackSpeed);
-
-                    // Check if the user has the window in focus and can therefor auto play the video
-                    player.playVideo();
-                    player.pauseVideo();
+                    break;
                 }
+            case "play-video-from-queue":
+                {
+                    this.sessionState = message.data.state;
+                    const videoToPlay = this.sessionState.queue[this.sessionState.currentQueueIndex];
 
-                break;
-            }
-            case "play-next-video": {
-                if (!message.success) return console.log(message.error);
+                    youtubeVideoHasLoaded = false;
+                    youtubeVideoFirstLoad = true;
 
-                youtubeVideoHasLoaded = false;
+                    removeTrackProgress();
+                    addProgressBar(videoToPlay.id);
 
-                this.sessionState = message.data.state;
+                    // Reset the joined mid session flag as the client should be considered "joined from the start of the video"
+                    this.joinedMidSession = false;
 
-                removeTrackProgress();
-                addProgressBar(videoToPlay.id);
+                    if (!youtubeIframeReady) {
+                        createYoutubeIframe();
+                    } else {
+                        // Make sure the iframe is visible
+                        document.querySelector("iframe").style.visibility = "";
+                        if (document.querySelector("#no-video")) document.querySelector("#no-video").remove();
 
-                if (!youtubeIframeReady)
-                    createYoutubeIframe();
-                else // TODO Fix
-                    player.loadVideoById(this.getVideoToPlay().id);
+                        youtubeIframeHasVideo = true;
+                        player.cueVideoById(videoToPlay.id, videoToPlay.timestamp);
 
-                break;
-            }
-            case "add-video-to-queue": {
-                if (!message.success) return console.log(message.error);
+                        // Playback speed
+                        player.setPlaybackRate(videoToPlay.playbackSpeed);
 
-                // Get the last element
-                const newQueueEntry = message.data.video;
-                if (!newQueueEntry) return;
-
-                this.sessionState.queue.push(newQueueEntry);
-
-                if (document.body.contains(document.getElementById("queue-info"))) {
-                    document.getElementById("queue-info").remove();
-                }
-
-                addVideoToQueueHtml(newQueueEntry);
-
-                break;
-            }
-            case "delete-video-from-queue": {
-                if (!message.success) return console.log(message.error);
-
-                this.sessionState.queue = message.data.queue;
-
-                const currentVideoId = getVideoData().currentVideoId;
-
-                document.getElementById('queue').removeChild(document.querySelector(`[data-id='${message.data.deleted}']`));
-
-                console.log("This is the deleted id: " + message.data.deleted)
-
-                if (this.sessionState.queue.length > 0) {
-                    if (message.data.deleted == currentVideoId) {
-
-                        var previousVideo = this.sessionState.currentQueueIndex - 1;
-                        if (previousVideo < 0) previousVideo = 0;
-
-                        this.send({
-                            type: "play-video-from-queue",
-                            data: { queueIndex: previousVideo },
-                            date: now()
-                        });
+                        // Check if the user has the window in focus and can therefor auto play the video
+                        player.playVideo();
+                        player.pauseVideo();
                     }
+
+                    break;
+                }
+            case "play-next-video":
+                {
+                    if (!message.success) return console.log(message.error);
+
+                    youtubeVideoHasLoaded = false;
+
+                    this.sessionState = message.data.state;
+
+                    removeTrackProgress();
+                    addProgressBar(videoToPlay.id);
+
+                    if (!youtubeIframeReady)
+                        createYoutubeIframe();
+                    else // TODO Fix
+                        player.loadVideoById(this.getVideoToPlay().id);
+
+                    break;
+                }
+            case "add-video-to-queue":
+                {
+                    if (!message.success) return console.log(message.error);
+
+                    // Get the last element
+                    const newQueueEntry = message.data.video;
+                    if (!newQueueEntry) return;
+
+                    this.sessionState.queue.push(newQueueEntry);
+
+                    if (document.body.contains(document.getElementById("queue-info"))) {
+                        document.getElementById("queue-info").remove();
+                    }
+
+                    addVideoToQueueHtml(newQueueEntry);
+
+                    break;
+                }
+            case "delete-video-from-queue":
+                {
+                    if (!message.success) return console.log(message.error);
+
+                    this.sessionState.queue = message.data.queue;
+
+                    const currentVideoId = getVideoData().currentVideoId;
+
+                    document.getElementById('queue').removeChild(document.querySelector(`[data-id='${message.data.deleted}']`));
+
+                    console.log("This is the deleted id: " + message.data.deleted)
+
+                    if (this.sessionState.queue.length > 0) {
+                        if (message.data.deleted == currentVideoId) {
+
+                            var previousVideo = this.sessionState.currentQueueIndex - 1;
+                            if (previousVideo < 0) previousVideo = 0;
+
+                            this.send({
+                                type: "play-video-from-queue",
+                                data: { queueIndex: previousVideo },
+                                date: now()
+                            });
+                        }
+                    }
+
+                    if (this.sessionState.queue.length == 0) {
+                        player = null;
+                        youtubeIframeReady = false;
+
+                        document.getElementById('player').remove();
+                        document.querySelector(`[class='player-container']`).innerHTML += `<div id="player"><h1 id="no-video">Please queue using the input above</h1></div>`;
+                    }
+
+                    break;
+                }
+            case "get-search-results":
+                {
+                    if (!message.success) return console.log(message.error);
+
+                    drawSearchResults(message.data.results, message.originalMessage.data.query);
+                    break;
+                }
+            case "log-event":
+                {
+                    if (!message.success) return console.log(message.error);
+
+                    console.log("log-event!!!!!!!!!!!!!")
+                    console.log(message.data)
+                    logEvent(message.data.oldName, message.data.name, message.data.event, message.data.video, message.data.date, message.data.color);
+                    break;
+                }
+            case "broadcast-clients":
+                {
+                    if (!message.success) return console.log(message.error);
+
+                    this.watchers = message.data.watchers;
+
+                    displayWatchers(message.data.watchers);
+
+                    break;
                 }
 
-                if (this.sessionState.queue.length == 0) {
-                    player = null;
-                    youtubeIframeReady = false;
+            case "play-video":
+                {
+                    if (!message.success) return console.log(message.error);
 
-                    document.getElementById('player').remove();
-                    document.querySelector(`[class='player-container']`).innerHTML += `<div id="player"><h1 id="no-video">Please queue using the input above</h1></div>`;
+                    if (youtubeIframeReady)
+                        player.playVideo();
+
+                    break;
                 }
 
-                break;
-            }
-            case "get-search-results": {
-                drawSearchResults(message.data.results, message.originalMessage.data.query);
-                break;
-            }
-            case "broadcast-clients": {
-                if (!message.success) return console.log(message.error);
+            case "give-me-timestamp":
+                {
+                    if (!message.success) return console.log(message.error);
 
-                this.watchers = message.data.watchers;
+                    youtubeIgnoreEventChange = true;
+                    setTimeout(() => youtubeIgnoreEventChange = false, 1000);
 
-                displayWatchers(message.data.watchers);
+                    const video = this.getVideoToPlay();
 
-                break;
-            }
+                    if (video.hasEnded) {
+                        console.log("video ended. Stopping");
+                        youtubeVideoFirstLoad = false;
+                        player.pauseVideo();
+                        return;
+                    }
 
-            case "play-video": {
-                if (!message.success) return console.log(message.error);
-
-                if (youtubeIframeReady)
-                    player.playVideo();
-
-                break;
-            }
-
-            case "give-me-timestamp": {
-                if (!message.success) return console.log(message.error);
-
-                youtubeIgnoreEventChange = true;
-                setTimeout(() => youtubeIgnoreEventChange = false, 1000);
-
-                const video = this.getVideoToPlay();
-
-                if (video.hasEnded) {
-                    console.log("video ended. Stopping");
-                    youtubeVideoFirstLoad = false;
-                    player.pauseVideo();
-                    return;
-                }
-
-                const margin = 1;
-                const timestamp = message.data.timestamp + margin;
-                console.log(message.data.timestamp, video.duration * 60)
-                //if (message.data.timestamp < video.duration * 60 + margin) {
+                    const margin = 1;
+                    const timestamp = message.data.timestamp + margin;
+                    console.log(message.data.timestamp, video.duration * 60)
+                    //if (message.data.timestamp < video.duration * 60 + margin) {
                     video.timestamp = message.data.timestamp + margin;
                     player.seekTo(video.timestamp);
-                // } else {
-                //     video.timestamp = video.duration * 60;
-                //     player.seekTo(video.timestamp);
-                //     player.stopVideo();
-                // }
+                    // } else {
+                    //     video.timestamp = video.duration * 60;
+                    //     player.seekTo(video.timestamp);
+                    //     player.stopVideo();
+                    // }
 
-                break;
-            }
+                    break;
+                }
 
-            default: {
-                console.log("Other message:", message.type);
-                break;
-            }
+            default:
+                {
+                    console.log("Other message:", message.type);
+                    break;
+                }
         }
     }
 

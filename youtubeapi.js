@@ -375,7 +375,7 @@ function deleteVideo(id) {
 
 function playVideo(id) {
     const index = connection.sessionState.queue.indexOf(connection.sessionState.queue.find(vid => vid.id === id));
-    connection.send({ type: "play-video-from-queue", data: { queueIndex: index } });
+    connection.send({ type: "play-video-from-queue", data: { queueIndex: index }, id: id});
 }
 
 function createSessionWithLink(link) {
