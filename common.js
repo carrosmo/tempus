@@ -159,6 +159,7 @@ function togglePlayer(window) {
                 document.querySelector(`#toggle-video`).classList.add("marked"); // Video toggle marked
                 document.getElementById('log').style.display = "none"; // Log hidden
                 document.getElementById('toggle-log').classList.remove("marked"); // Log toggle unmakred
+                document.querySelectorAll('.event-container').scrollTop = document.querySelectorAll('.event-container').scrollHeight;
                 break;
             }
         case "log":
@@ -167,6 +168,7 @@ function togglePlayer(window) {
                 document.querySelector(`#toggle-video`).classList.remove("marked"); // Video toggle unmarked
                 document.getElementById('log').style.display = "block"; // Log visible
                 document.getElementById('toggle-log').classList.add("marked"); // Log toggle marked
+                document.querySelector('#log').scrollTop = document.querySelector('#log').scrollHeight;
                 break;
             }
     }
