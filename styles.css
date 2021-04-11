@@ -82,6 +82,11 @@ footer {
     max-width: 1280px;
     height: calc(70vw * 0.5625);
     max-height: 720px;
+    position: relative;
+}
+
+.message-input {
+    width: 100%;
 }
 
 #log {
@@ -737,6 +742,7 @@ h1 {
     #log {
         width: 100%;
         height: calc(100vw * 0.5625);
+        position: relative;
     }
     .status {
         bottom: 0px;

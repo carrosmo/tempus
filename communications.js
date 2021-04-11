@@ -323,8 +323,10 @@ class Connection {
                 {
                     if (!message.success) return console.log(message.error);
 
+                    scrollIntoView();
+
                     console.log(message.data)
-                    logEvent(message.data.oldName, message.data.name, message.data.event, message.data.video, `${new Date().getHours()}:${(new Date().getMinutes()<10?'0':'') + new Date().getMinutes()}`, message.data.color);
+                    logEvent(message.data.oldName, message.data.name, message.data.event, message.data.video, `${new Date().getHours()}:${(new Date().getMinutes()<10?'0':'') + new Date().getMinutes()}`, message.data.color, message.data.message);
                     break;
                 }
             case "broadcast-clients":

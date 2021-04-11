@@ -33,6 +33,9 @@
             <div class="event-container">
                 <!-- Events go here dynamically -->
             </div>
+            <form class="message-input" onsubmit="sendMessage(document.querySelector('.message-input').childNodes[1].value); event.preventDefault();">
+                <input id="message" placeholder="Message the room" autocomplete="off">
+            </form>
         </div>
         <div class="queue-container">
             <h1 style="margin-top:0px">Upcoming</h1>

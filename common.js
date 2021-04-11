@@ -151,6 +151,16 @@ function updateName() {
     });
 }
 
+function sendMessage(message) {
+    document.getElementById("message").value = "";
+    console.log(message)
+    connection.send({
+        type: "chat-message",
+        data: { message: message },
+        date: now()
+    });
+}
+
 document.getElementById('client-name-input').addEventListener("keyup", function(event) {
     if (event.key === "Enter") {
         updateName();
@@ -175,64 +185,85 @@ function togglePlayer(window) {
                 document.querySelector(`#toggle-video`).classList.remove("marked"); // Video toggle unmarked
                 document.getElementById('log').style.display = "block"; // Log visible
                 document.getElementById('toggle-log').classList.add("marked"); // Log toggle marked
-                document.querySelector('#log').scrollTop = document.querySelector('#log').scrollHeight;
+                scrollIntoView();
                 break;
             }
     }
 }
 
-function logEvent(oldName = "", name, event, video = "", date, color) {
+function logEvent(oldName = "", name, event, video = "", date, color, message = "") {
     switch (event) {
         case "paused":
             { // Works mostly
-                drawEvent(name, `paused the video`, date, color)
+                drawEvent(name, `paused the video`, date, color, false)
                 break;
             }
         case "unpaused":
             { // Works mostly
-                drawEvent(name, `unpaused the video`, date, color)
+                drawEvent(name, `unpaused the video`, date, color, false)
                 break;
             }
         case "client-joined":
             { // Works
-                drawEvent(name, `joined the room`, date, color)
+                drawEvent(name, `joined the room`, date, color, false)
                 break;
             }
         case "client-left":
             { // Works
-                drawEvent(name, `left the room`, date, color)
+                drawEvent(name, `left the room`, date, color, false)
                 break;
             }
         case "video-play":
             { // Works
-                drawEvent(name, `played the video: "${video}"`, date, color)
+                drawEvent(name, `played the video: "${video}"`, date, color, false)
                 break;
             }
         case "video-queue":
             { // Works
-                drawEvent(name, `queued the video: "${video}"`, date, color)
+                drawEvent(name, `queued the video: "${video}"`, date, color, false)
                 break;
             }
         case "video-delete":
             { // Works
-                drawEvent(name, `deleted the video: "${video}"`, date, color)
+                drawEvent(name, `deleted the video: "${video}"`, date, color, false)
                 break;
             }
         case "name-update":
             { // Works
-                drawEvent(name, `changed their name from: "${oldName}"`, date, color)
+                drawEvent(name, `changed their name from: "${oldName}"`, date, color, false)
+                break;
+            }
+        case "chat-message":
+            { // Not tested
+                drawEvent(name, message, date, color, true)
                 break;
             }
     }
 }
 
-function drawEvent(name, text, date, color) {
-    document.querySelector(`[class='event-container']`).innerHTML += `
-    <div class="event">
-        <span class="name" style="color: ${color};">${name}</span>
-        <span class="event-text">${text}</span>
-        <span class="time">${date}</span>
-    </div>`
+function drawEvent(name, text, date, color, isMessage) {
+    var html;
+    if (!isMessage) {
+        html = `
+        <div class="event">
+            <span class="name" style="color: ${color};">${name}</span>
+            <span class="event-text" style="color: ${color};">${text}</span>
+            <span class="time">${date}</span>
+        </div>`
+    } else {
+        html = `
+        <div class="event">
+            <span class="name" style="color: ${color};">${name}</span>
+            <span class="event-text">${text}</span>
+            <span class="time">${date}</span>
+        </div>`
+    }
+    document.querySelector(`[class='event-container']`).innerHTML += html;
+    scrollIntoView()
+}
+
+function scrollIntoView() {
+    document.querySelector('#log').scrollTop = document.querySelector('#log').scrollHeight + document.querySelector("#message").offsetHeight;
 }
 
 function a() {
