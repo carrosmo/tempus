@@ -1,5 +1,5 @@
 var forceProd = false;
-var serverUrl = forceProd ? "ws://ludvig.cloudno.de/tempus" : (window.location.port ? "ws://localhost:8080/tempus" : "wss://ludvig.cloudno.de/tempus");
+var serverUrl = forceProd ? "wss://ludvigdb.tk:1235/tempus" : (window.location.port ? "ws://localhost:8080/tempus" : "wss://ludvigdb.tk:1235/tempus");
 
 var connection = new Connection(serverUrl);
 var player;
@@ -139,7 +139,7 @@ function onPlayerStateChange(event) {
             youtubeVideoHasLoaded = true;
             youtubeVideoFirstLoad = true;
         }
-        if (connection.joinedMidSession && !connection.getVideoToPlay().isPaused /* && !connection.getVideoToPlay().hasEnded*/ ) {
+        if (connection.joinedMidSession && !connection.getVideoToPlay().isPaused /* && !connection.getVideoToPlay().hasEnded*/) {
             if (connection.getVideoToPlay().hasEnded) {
                 //youtubeVideoFirstLoad = false;
             } else {
@@ -169,13 +169,13 @@ function onPlayerStateChange(event) {
         if (connection.isAdmin) {
             connection.send({
                 type: "state-update",
-                data: {...getVideoData(), firstLoad: youtubeVideoFirstLoad },
+                data: { ...getVideoData(), firstLoad: youtubeVideoFirstLoad },
                 date: now()
             });
         } else if (!youtubeVideoFirstLoad) {
             connection.send({
                 type: "state-update",
-                data: {...getVideoData(), firstLoad: youtubeVideoFirstLoad },
+                data: { ...getVideoData(), firstLoad: youtubeVideoFirstLoad },
                 date: now()
             });
 
@@ -187,7 +187,7 @@ function onPlayerStateChange(event) {
             if (!youtubeVideoFirstLoad) {
                 connection.send({
                     type: "state-update",
-                    data: {...getVideoData(), firstLoad: youtubeVideoFirstLoad },
+                    data: { ...getVideoData(), firstLoad: youtubeVideoFirstLoad },
                     date: now()
                 });
             }
@@ -210,7 +210,7 @@ function onPlayerStateChange(event) {
         if (!youtubeVideoFirstLoad && /* connection.joinedMidSession && */ connection.getVideoToPlay().hasEnded) {
             connection.send({
                 type: "state-update",
-                data: {...getVideoData(), hasEnded: false },
+                data: { ...getVideoData(), hasEnded: false },
                 date: now()
             });
         }
@@ -408,6 +408,6 @@ function getSearchResults(search) {
     });
 }
 
-window.onhashchange = function() {
+window.onhashchange = function () {
     window.location.reload();
 }
